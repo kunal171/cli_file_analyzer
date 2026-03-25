@@ -1,3 +1,6 @@
+mod reader;
+
 fn main() {
-    println!("Hello, world!");
+    let content = reader::read_file("src/main.rs").unwrap();
+    println!("{}", content);
 }
