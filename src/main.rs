@@ -4,6 +4,7 @@
 
 // Importing the reader module which contains the function to read files
 mod reader;
+mod analyzer;
 
 use std::io;
 
@@ -24,4 +25,9 @@ fn main() {
         std::process::exit(1);
     });
     println!("{}", content);
+
+    let analysis = analyzer::analyze_file_content(&content);
+    println!("Lines: {}", analysis.line_count);
+    println!("Words: {}", analysis.word_count);
+    println!("Characters: {}", analysis.character_count);
 }
