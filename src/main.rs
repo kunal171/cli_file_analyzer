@@ -33,10 +33,14 @@ fn main() {
         eprintln!("Error: {}", e);
         std::process::exit(1);
     });
-    println!("{}", content);
+    // println!("{}", content);
 
     let analysis = analyzer::analyze_file_content(&content);
     println!("Lines: {}", analysis.line_count);
     println!("Words: {}", analysis.word_count);
     println!("Characters: {}", analysis.character_count);
+    println!("\nTop Words:");
+    for (i, freq) in analysis.top_words.iter().enumerate() {
+        println!("{}. {} ({})", i + 1, freq.word, freq.count);
+    }
 }
