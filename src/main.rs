@@ -7,20 +7,29 @@ mod reader;
 mod analyzer;
 
 use std::io;
+use std::env::args;
 
 fn main() {
-    // Prompting the user to enter the file path
-    let mut file_path = String::new();
-    // Using stdin to read the file path input from the user
-    io::stdin()
-        .read_line(&mut file_path)
-        .expect("Failed to read the input");
+    // Getting the file path from the command line arguments
+    let mut file_path = args().nth(1);
 
-    // Trimming the input to remove any leading or trailing whitespace characters
-    let file_path = file_path.trim();
+    let file_path = match file_path {
+        Some(path) => path,
+        None => {
+            eprintln!("Error: no file path provided.");
+            eprintln!("Usage: cargo run -- <file_path>");
+            std::process::exit(1);
+        }
+    };
+    // io::stdin()
+    //     .read_line(&mut file_path)
+    //     .expect("Failed to read the input");
+
+    // // Trimming the input to remove any leading or trailing whitespace characters
+    // let file_path = file_path.trim();
 
     // Calling the read_file function from the reader module to read the contents of the text file and print it to the console
-    let content = reader::read_file(file_path).unwrap_or_else(|e| {
+    let content = reader::read_file(&file_path).unwrap_or_else(|e| {
         eprintln!("Error: {}", e);
         std::process::exit(1);
     });
