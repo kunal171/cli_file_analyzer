@@ -2,8 +2,11 @@
 // This module contains functions for analyzing the contents of a file.
 
 use std::collections::HashMap;
+use serde::Serialize;
 
 // Struct to represent the analysis results of a file
+// This struct contains the line count, word count, character count, and top words in the file
+#[derive(Serialize)]
 pub struct FileAnalysis {
     pub line_count: usize,
     pub word_count: usize,
@@ -12,6 +15,8 @@ pub struct FileAnalysis {
 }
 
 // Struct to represent a word and its frequency
+// This struct is used to store the word and its count for the top words in the file
+#[derive(Serialize)]
 pub struct WordFrequency {
     pub word: String,
     pub count: usize,

@@ -61,12 +61,13 @@ CLI → File Reader → Text Analyzer → Output Formatter
 
 ## Features
 
-- [ ] Read and analyze files from command-line arguments
-- [ ] Display file metadata (size, line count, word count, character count)
+- [x] Read and analyze files from command-line arguments
+- [x] Display file metadata (size, line count, word count, character count)
 - [ ] Detect file encoding and type
 - [ ] Search for patterns within files
-- [ ] Support multiple files and directory scanning
-- [ ] Formatted output (table, JSON)
+- [x] Support multiple files and directory scanning
+- [x] JSON output format
+- [ ] Formatted output (table)
 
 ## Rust Concepts Practiced
 
@@ -80,7 +81,14 @@ CLI → File Reader → Text Analyzer → Output Formatter
 ## Usage
 
 ```bash
+# Analyze a file with default output
 cargo run -- <file_path>
+
+# Analyze multiple files
+cargo run -- file1.txt file2.txt
+
+# Output results in JSON format
+cargo run -- --json <file_path>
 ```
 
 ## Build
