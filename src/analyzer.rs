@@ -22,6 +22,15 @@ pub struct WordFrequency {
     pub count: usize,
 }
 
+// Struct to represent the results of a search operation in the file
+// This struct contains the search pattern, the count of matches, and the lines that contain the
+#[derive(Serialize)]
+pub struct SearchResult {
+    pub pattern: String,
+    pub matches_count: usize,
+    pub matching_lines: Vec<String>,
+}
+
 // Function to analyze the contents of the file and return a FileAnalysis struct
 pub fn analyze_file_content(content: &str) -> FileAnalysis {
     // Counting lines, words, and characters in the file content
@@ -66,4 +75,25 @@ fn normalize_word(word: &str) -> String {
         .chars()
         .filter(|c| c.is_alphanumeric())
         .collect()
+}
+
+/// Search for a pattern in the file content and return matching lines
+pub fn search_pattern(content: &str, pattern: &str) -> SearchResult {
+    let mut matches_count = 0;
+    let mut matching_lines = Vec::new();
+    let pattern_lower = pattern.to_lowercase();
+
+    // Convert the search pattern to lowercase for case-insensitive search
+    for line in content.lines() {
+        if line.to_lowercase().contains(&pattern_lower) {
+            matches_count += 1;
+            matching_lines.push(line.to_string());
+        }
+    }
+
+    SearchResult {
+        pattern: pattern.to_string(),
+        matches_count,
+        matching_lines,
+    }
 }
