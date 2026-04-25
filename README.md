@@ -64,10 +64,11 @@ CLI → File Reader → Text Analyzer → Output Formatter
 - [x] Read and analyze files from command-line arguments
 - [x] Display file metadata (size, line count, word count, character count)
 - [ ] Detect file encoding and type
-- [ ] Search for patterns within files
+- [x] Search for patterns within files
 - [x] Support multiple files and directory scanning
 - [x] JSON output format
-- [ ] Formatted output (table)
+- [x] Formatted output (table)
+- [x] CSV output format
 
 ## Rust Concepts Practiced
 
@@ -89,6 +90,16 @@ cargo run -- file1.txt file2.txt
 
 # Output results in JSON format
 cargo run -- --json <file_path>
+
+# Choose an output format
+cargo run -- --format table <file_path>
+cargo run -- --format csv <file_path>
+
+# Search with line numbers
+cargo run -- --search rust <file_path>
+
+# Recursively scan a directory and filter extensions
+cargo run -- --recursive --ext rs,txt <directory>
 ```
 
 ## Build

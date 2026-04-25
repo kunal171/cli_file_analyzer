@@ -11,6 +11,8 @@ pub struct FileAnalysis {
     pub line_count: usize,
     pub word_count: usize,
     pub character_count: usize,
+    pub byte_count: usize,
+    pub blank_line_count: usize,
     pub top_words: Vec<WordFrequency>, // Placeholder for top words
 }
 
@@ -27,8 +29,15 @@ pub struct WordFrequency {
 #[derive(Serialize)]
 pub struct SearchResult<'a> {
     pub pattern: String,
-    pub matches_count: usize,
-    pub matching_lines: Vec<&'a str>,
+    pub matching_line_count: usize,
+    pub total_matches: usize,
+    pub matches: Vec<SearchMatch<'a>>,
+}
+
+#[derive(Serialize)]
+pub struct SearchMatch<'a> {
+    pub line_number: usize,
+    pub line: &'a str,
 }
 
 // Function to analyze the contents of the file and return a FileAnalysis struct
@@ -37,6 +46,11 @@ pub fn analyze_file_content(content: &str) -> FileAnalysis {
     let line_count = content.lines().count();
     let word_count = content.split_whitespace().count();
     let character_count = content.chars().count();
+    let byte_count = content.len();
+    let blank_line_count = content
+        .lines()
+        .filter(|line| line.trim().is_empty())
+        .count();
     let mut word_freq: HashMap<String, usize> = HashMap::new();
 
     // let mut word_frequencies = HashMap::new();
@@ -64,6 +78,8 @@ pub fn analyze_file_content(content: &str) -> FileAnalysis {
         line_count,
         word_count,
         character_count,
+        byte_count,
+        blank_line_count,
         top_words,
     }
 }
@@ -78,22 +94,38 @@ fn normalize_word(word: &str) -> String {
 
 /// Search for a pattern in the file content and return matching lines
 pub fn search_pattern<'a>(content: &'a str, pattern: &str) -> SearchResult<'a> {
-    let mut matches_count = 0;
-    let mut matching_lines = Vec::new();
+    let mut total_matches = 0;
+    let mut matches = Vec::new();
     let pattern_lower = pattern.to_lowercase();
 
+    if pattern_lower.is_empty() {
+        return SearchResult {
+            pattern: pattern.to_string(),
+            matching_line_count: 0,
+            total_matches: 0,
+            matches,
+        };
+    }
+
     // Convert the search pattern to lowercase for case-insensitive search
-    for line in content.lines() {
-        if line.to_lowercase().contains(&pattern_lower) {
-            matches_count += 1;
-            matching_lines.push(line);
+    for (index, line) in content.lines().enumerate() {
+        let line_lower = line.to_lowercase();
+        let line_matches = line_lower.matches(&pattern_lower).count();
+
+        if line_matches > 0 {
+            total_matches += line_matches;
+            matches.push(SearchMatch {
+                line_number: index + 1,
+                line,
+            });
         }
     }
 
     SearchResult {
         pattern: pattern.to_string(),
-        matches_count,
-        matching_lines,
+        matching_line_count: matches.len(),
+        total_matches,
+        matches,
     }
 }
 
@@ -118,6 +150,18 @@ mod tests {
         assert_eq!(analysis.line_count, 2);
         assert_eq!(analysis.word_count, 6);
         assert_eq!(analysis.character_count, content.chars().count());
+        assert_eq!(analysis.byte_count, content.len());
+        assert_eq!(analysis.blank_line_count, 0);
+    }
+
+    #[test]
+    fn counts_blank_lines() {
+        let content = "Rust\n\n   \nGo";
+
+        let analysis = analyze_file_content(content);
+
+        assert_eq!(analysis.line_count, 4);
+        assert_eq!(analysis.blank_line_count, 2);
     }
 
     #[test]
@@ -173,6 +217,8 @@ mod tests {
         assert_eq!(analysis.line_count, 0);
         assert_eq!(analysis.word_count, 0);
         assert_eq!(analysis.character_count, 0);
+        assert_eq!(analysis.byte_count, 0);
+        assert_eq!(analysis.blank_line_count, 0);
         assert!(analysis.top_words.is_empty());
     }
 
@@ -190,11 +236,22 @@ mod tests {
         let result = search_pattern(content, "RUST");
 
         assert_eq!(result.pattern, "RUST");
-        assert_eq!(result.matches_count, 2);
-        assert_eq!(
-            result.matching_lines,
-            vec!["Rust is fast", "async rust is powerful"]
-        );
+        assert_eq!(result.matching_line_count, 2);
+        assert_eq!(result.total_matches, 2);
+        assert_eq!(result.matches[0].line_number, 1);
+        assert_eq!(result.matches[0].line, "Rust is fast");
+        assert_eq!(result.matches[1].line_number, 3);
+        assert_eq!(result.matches[1].line, "async rust is powerful");
+    }
+
+    #[test]
+    fn search_counts_multiple_matches_on_one_line() {
+        let content = "rust rust\nno match\nRust";
+
+        let result = search_pattern(content, "rust");
+
+        assert_eq!(result.matching_line_count, 2);
+        assert_eq!(result.total_matches, 3);
     }
 
     #[test]
@@ -203,7 +260,17 @@ mod tests {
 
         let result = search_pattern(content, "thread");
 
-        assert_eq!(result.matches_count, 0);
-        assert!(result.matching_lines.is_empty());
+        assert_eq!(result.matching_line_count, 0);
+        assert_eq!(result.total_matches, 0);
+        assert!(result.matches.is_empty());
+    }
+
+    #[test]
+    fn search_treats_empty_pattern_as_no_match() {
+        let result = search_pattern("rust", "");
+
+        assert_eq!(result.matching_line_count, 0);
+        assert_eq!(result.total_matches, 0);
+        assert!(result.matches.is_empty());
     }
 }
