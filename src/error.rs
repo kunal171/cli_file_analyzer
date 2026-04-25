@@ -3,9 +3,9 @@ use std::io;
 // Define a custom error type for the application
 #[derive(Debug)]
 pub enum FileAnalyserError {
-    IoError(io::Error), // Error related to file I/O operations
+    IoError(io::Error),      // Error related to file I/O operations
     InvalidFilePath(String), // Error for invalid file paths
-    AnalysisError(String), // Error during analysis of the file content
+    AnalysisError(String),   // Error during analysis of the file content
 }
 
 // Implement conversion from io::Error to FileAnalyserError
